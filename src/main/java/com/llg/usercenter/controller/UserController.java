@@ -9,7 +9,11 @@ import com.llg.usercenter.model.domain.User;
 import com.llg.usercenter.model.domain.request.UserLoginRequest;
 import com.llg.usercenter.model.domain.request.UserRegisterRequest;
 import com.llg.usercenter.service.UserService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -34,7 +38,7 @@ public class UserController {
     @Resource
     private UserService userService;
 
-    @RequestMapping("/register")
+    @PostMapping("/register")
     public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest){
 
         if (userRegisterRequest == null){
@@ -119,10 +123,27 @@ public class UserController {
         return ResultUtils.success(b);
     }
 
+    /**
+     * 是否管理员
+     * @param request
+     * @return
+     */
     public boolean isAdmin(HttpServletRequest request){
         Object objUser = request.getSession().getAttribute(USER_LOGIN_STATE);
         User user = (User)objUser;
         return user != null && user.getUserRole() == ADMIN_ROLE;
     }
 
+    public List<User> searchUserByTags (List<String> tagNameList){
+        if (CollectionUtils.isEmpty(tagNameList)){
+            throw  new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        //拼接 and 语句
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        for (String tagName : tagNameList){
+            queryWrapper = queryWrapper.like("tags",tagName);
+        }
+        return null;
+
+    }
 }

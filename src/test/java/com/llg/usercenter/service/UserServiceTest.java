@@ -1,5 +1,9 @@
 package com.llg.usercenter.service;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -78,6 +82,13 @@ class UserServiceTest {
         String validPattern = "[`~!@#$%^&*()+=|{}':;',\\\\[\\\\].<>/?~！ @#￥%……&*（）——+|{}【】‘；：”“’。，、？]";
         Matcher matcher = Pattern.compile(validPattern).matcher(userAccount);
         System.out.println(matcher.find());
+    }
+
+    @Test
+    void testSearchUserByTags(){
+        List<String> tagNameList = Arrays.asList("java","c++");
+        List<User> users = userService.searchUserByTags(tagNameList);
+        Assertions.assertNotNull(users);
     }
 
 }

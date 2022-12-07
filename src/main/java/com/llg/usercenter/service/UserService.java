@@ -6,6 +6,7 @@ import com.llg.usercenter.model.domain.User;
 import org.springframework.http.HttpRequest;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
 * @author liulg
@@ -47,4 +48,11 @@ public interface UserService extends IService<User> {
      * @return
      */
     int userLogOut(HttpServletRequest request);
+
+    /**
+     * 根据标签搜索用户
+     * @param tagNameList 标签json列表
+     * @return
+     */
+    List<User> searchUserByTags (List<String> tagNameList);
 }

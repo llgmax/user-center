@@ -8,6 +8,10 @@ spring:
     url: jdbc:mysql://localhost:3306/usercenter
     username: root
     password: root
+  mvc:
+    pathmatch:
+      # 配置策略
+      matching-strategy: ANT_PATH_MATCHER
 server:
   port: 8080
   servlet:
@@ -20,4 +24,4 @@ mybatis-plus:
       logic-not-delete-value: 0 # 逻辑未删除值(默认为 0)
   configuration:
     map-underscore-to-camel-case: false
-
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
