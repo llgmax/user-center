@@ -50,6 +50,11 @@ public class User implements Serializable {
     private String userPassword;
 
     /**
+     * 个人简介
+     */
+    private String profile;
+
+    /**
      * 邮箱
      */
     private String email;

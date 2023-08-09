@@ -9,16 +9,12 @@ import com.llg.usercenter.model.domain.User;
 import com.llg.usercenter.model.domain.request.UserLoginRequest;
 import com.llg.usercenter.model.domain.request.UserRegisterRequest;
 import com.llg.usercenter.service.UserService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,6 +29,7 @@ import static com.llg.usercenter.constant.UserConstant.USER_LOGIN_STATE;
  */
 @RestController
 @RequestMapping("/user")
+@CrossOrigin(origins = {"http://localhost:5173","http://127.0.0.1:5173/","http://127.0.0.1:8000","http://localhost:8000"})
 public class UserController {
 
     @Resource
@@ -43,7 +40,6 @@ public class UserController {
 
         if (userRegisterRequest == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
-//            return ResultUtils.error(ErrorCode.PARAMS_ERROR);
         }
         String userAccount = userRegisterRequest.getUserAccount();
         String userPassword = userRegisterRequest.getUserPassword();
@@ -97,7 +93,7 @@ public class UserController {
 
     @GetMapping("/search")
     public BaseResponse<List<User>> searchUsers(String username,HttpServletRequest request){
-        if(!isAdmin(request)){
+        if(!userService.isAdmin(request)){
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
@@ -111,9 +107,32 @@ public class UserController {
         return ResultUtils.success(list);
     }
 
+    @GetMapping("/search/tags")
+    public BaseResponse<List<User>> searchUsersByTags (@RequestParam(required = false) List<String> tagNameList){
+        if (CollectionUtils.isEmpty(tagNameList)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        List<User> userList = userService.searchUserByTags(tagNameList);
+        return ResultUtils.success(userList);
+
+    }
+
+    @PostMapping("/update")
+    public BaseResponse<Integer> updateUser(@RequestBody User user ,HttpServletRequest request){
+        if(user == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = userService.getLoginUser(request);
+        if(loginUser == null){
+            throw new BusinessException(ErrorCode.NO_AUTH);
+        }
+        int result = userService.updateUser(user,loginUser);
+        return ResultUtils.success(result);
+    }
+
     @PostMapping("/delete")
     public BaseResponse<Boolean> deleteUser(@RequestBody long id,HttpServletRequest request){
-        if(!isAdmin(request)){
+        if(!userService.isAdmin(request)){
             throw new BusinessException(ErrorCode.NO_AUTH);
         }
         if (id<=0){
@@ -123,16 +142,7 @@ public class UserController {
         return ResultUtils.success(b);
     }
 
-    /**
-     * 是否管理员
-     * @param request
-     * @return
-     */
-    public boolean isAdmin(HttpServletRequest request){
-        Object objUser = request.getSession().getAttribute(USER_LOGIN_STATE);
-        User user = (User)objUser;
-        return user != null && user.getUserRole() == ADMIN_ROLE;
-    }
+
 
     public List<User> searchUserByTags (List<String> tagNameList){
         if (CollectionUtils.isEmpty(tagNameList)){
@@ -146,4 +156,5 @@ public class UserController {
         return null;
 
     }
+
 }

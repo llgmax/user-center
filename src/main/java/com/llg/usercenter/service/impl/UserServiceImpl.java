@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.llg.usercenter.common.ErrorCode;
+import com.llg.usercenter.constant.UserConstant;
 import com.llg.usercenter.exception.BusinessException;
 import com.llg.usercenter.model.domain.User;
 import com.llg.usercenter.service.UserService;
@@ -29,6 +30,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.llg.usercenter.constant.UserConstant.USER_LOGIN_STATE;
+import static com.llg.usercenter.constant.UserConstant.ADMIN_ROLE;
 
 /**
 * @author liulg
@@ -169,6 +171,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         safetyUser.setPlanetCode(originUser.getPlanetCode());
         safetyUser.setCreateTime(originUser.getCreateTime());
         safetyUser.setUpdateTime(originUser.getUpdateTime());
+        safetyUser.setProfile(originUser.getProfile());
         safetyUser.setTags(originUser.getTags());
 
         return safetyUser;
@@ -184,6 +187,38 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         request.getSession().removeAttribute(USER_LOGIN_STATE);
         return 1;
     }
+    /**
+     * 修改用户资料
+     * @param user 修改用户资料
+     * @return
+     */
+    @Override
+    public int updateUser (User user,User loginUser){
+        if(isAdmin(loginUser)) {
+
+        }
+
+        return 1;
+    }
+
+    /**
+     * 获取当前登录用户信息
+     * @param request 获取当前登录用户信息
+     * @return
+     */
+    @Override
+    public User getLoginUser (HttpServletRequest request){
+        if(request == null){
+            return null;
+        }
+        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
+        if(userObj == null){
+            throw new BusinessException(ErrorCode.NO_AUTH);
+        }
+
+        return (User) userObj;
+    }
+
 
     /**
      * 根据标签搜索用户
@@ -224,6 +259,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             }
             return true;
         }).map(this::getSafetyUser).collect(Collectors.toList());
+    }
+
+    /**
+      * 是否管理员
+      * @param request
+      * @return
+      */
+    @Override
+    public boolean isAdmin(HttpServletRequest request){
+        Object objUser = request.getSession().getAttribute(USER_LOGIN_STATE);
+        User user = (User)objUser;
+        return user != null && user.getUserRole() == UserConstant.ADMIN_ROLE;
+    }
+
+    @Override
+    public boolean isAdmin(User loginUser){
+        return loginUser != null && loginUser.getUserRole() == UserConstant.ADMIN_ROLE;
     }
 }
 
