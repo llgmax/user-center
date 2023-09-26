@@ -29,7 +29,7 @@ import static com.llg.usercenter.constant.UserConstant.USER_LOGIN_STATE;
  */
 @RestController
 @RequestMapping("/user")
-@CrossOrigin(origins = {"http://localhost:5173","http://127.0.0.1:5173/","http://127.0.0.1:8000","http://localhost:8000"})
+@CrossOrigin(origins = {"http://localhost:8080","http://localhost:5173","http://127.0.0.1:5173/","http://127.0.0.1:8000","http://localhost:8000","http://169.254.134.201:8000"})
 public class UserController {
 
     @Resource
