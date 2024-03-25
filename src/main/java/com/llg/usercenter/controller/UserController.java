@@ -1,5 +1,8 @@
 package com.llg.usercenter.controller;
 
+import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.write.metadata.WriteSheet;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.llg.usercenter.common.BaseResponse;
 import com.llg.usercenter.common.ErrorCode;
@@ -9,12 +12,17 @@ import com.llg.usercenter.model.domain.User;
 import com.llg.usercenter.model.domain.request.UserLoginRequest;
 import com.llg.usercenter.model.domain.request.UserRegisterRequest;
 import com.llg.usercenter.service.UserService;
+import lombok.SneakyThrows;
+import org.apache.catalina.connector.Response;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,6 +42,9 @@ public class UserController {
 
     @Resource
     private UserService userService;
+
+    @Value("${username_app}")
+    private  String port;
 
     @PostMapping("/register")
     public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest){
@@ -70,7 +81,7 @@ public class UserController {
 
     @PostMapping("/logout")
     public BaseResponse<Integer> userLogOut(HttpServletRequest request){
-
+        System.out.println(port);
         if (request == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -105,6 +116,41 @@ public class UserController {
             return userService.getSafetyUser(user);
         }).collect(Collectors.toList());
         return ResultUtils.success(list);
+    }
+
+    /**
+     * 导出文件
+     * @param username
+     * @param request
+     * @param response
+     */
+    @ResponseBody
+    @SneakyThrows
+    @PostMapping("/export")
+    public void exportUsers(String username,HttpServletRequest request,HttpServletResponse response){
+        response.setContentType("application/octet-stream;charset=utf-8");
+        response.setHeader("access-control-allow-origin","");
+        response.setHeader("content-disposition","attachment;filename="+ URLEncoder.encode("用户导出模板.xlsx","utf-8")
+                .replaceAll("\\+","%20"));
+        response.setHeader("access-control-expose-headers","content-disposition");
+//        if(!userService.isAdmin(request)){
+//            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+//        }
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        if (StringUtils.isNotBlank(username) ){
+            queryWrapper.like("username",username);
+        }
+        List<User> userList = userService.list(queryWrapper);
+        List<User> list = userList.stream().map(user -> {
+            return userService.getSafetyUser(user);
+        }).collect(Collectors.toList());
+
+        ExcelWriter excelWriter = EasyExcel.write(response.getOutputStream())
+                .withTemplate(this.getClass().getResourceAsStream("/excelTemplate/用户导出模板.xlsx")).build();
+        WriteSheet writeSheet = EasyExcel.writerSheet().build();
+        excelWriter.fill(userList,writeSheet);
+        excelWriter.finish();
+
     }
 
     @GetMapping("/search/tags")

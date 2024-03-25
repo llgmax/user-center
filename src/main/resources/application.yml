@@ -1,3 +1,11 @@
+#加密密钥
+jasypt:
+  encryptor:
+    algorithm: PBEWithMD5AndDES
+    password: 123456
+#    iv-generator-classname: org.jasypt.iv.RandomIvGenerator
+    iv-generator-classname: org.jasypt.iv.NoIvGenerator
+#    bean: JasyptUtils
 spring:
   application:
     name: user-center
@@ -7,8 +15,9 @@ spring:
     store-type: redis
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/usercenter
+    url: jdbc:mysql://localhost:3306/usercenter?&serverTimezone=Asia/Shanghai
     username: root
+#    password: ENC(Hi3K8jwW+GApVZcR1Fo4dw==)
     password: root
   mvc:
     pathmatch:
@@ -19,6 +28,7 @@ spring:
     port: 6379
     host: 127.0.0.1
     database: 0
+    #password: ENC(lpmF+Hf/vfUhh5PtVoqCpg==)
     password: 123456
 server:
   port: 8080
